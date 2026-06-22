@@ -26,6 +26,7 @@ server.listen(8050, () => {
     console.log("O servidor está ligado na porta 8050");
 });
 
+
 // Query params
 server.get('/curso', (req, res) => {
     const nome = req.query.nome;
@@ -34,10 +35,23 @@ server.get('/curso', (req, res) => {
     })
 });
 
+
 // Route params
 server.get('/curso/:id', (req, res) => {
     const id = req.params.id;
     return res.json({
         curso: `Aprendendo ${id}`
     })
+});
+
+
+// Método Post:
+server.use(express.json()); // Permite que o Express entenda JSON
+server.use(express.urlencoded({ extended: true })); // Permite que entenda dados de formulários (URL-encoded)
+
+let curso = [];
+server.post(`/add-curso`, (req, res) => {
+    const objeto = req.body;
+    curso.push(objeto.nome);
+    return res.json(curso);
 });
