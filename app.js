@@ -51,6 +51,13 @@ server.put(`/curso/:id`, (req, res) => {
     return res.json(curso);
 });
 
+// Método Delete
+server.delete(`/curso/:id`, (req, res) => {
+    const id = req.params.id;
+    curso.splice(id, 1);
+    return res.json(curso);
+});
+
 
 // Método listen() faz o servidor escutar as requisições em uma porta determinada:
 server.listen(8050, () => {
