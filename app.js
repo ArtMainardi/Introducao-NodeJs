@@ -32,13 +32,13 @@ function CursoValido(req, res, next){
 }
 function CursoExiste(req, res, next){
     const id = req.params.id;
-    const sql = "SELECT MAX(id_curso) AS 'max' FROM Cursos";
+    const sql = "SELECT * FROM Cursos WHERE id_curso = ?";
 
-    connection.query(sql, (e, resultados) => {
+    connection.query(sql, [id], (e, resultados) => {
         if(e){
             return res.status(500).json({erro: e.message});
         }
-        if(parseInt(id) > resultados[0].max){
+        if(resultados.length == 0){
             return res.status(400).json({erro: "Não existe nenhum dado no banco de dados com o ID informado!"})
         }
         return next();
