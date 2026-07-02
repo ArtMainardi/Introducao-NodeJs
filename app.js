@@ -30,6 +30,20 @@ function CursoValido(req, res, next){
         return next();
     }
 }
+function CursoExiste(req, res, next){
+    const id = req.params.id;
+    const sql = "SELECT MAX(id_curso) AS 'max' FROM Cursos";
+
+    connection.query(sql, (e, resultados) => {
+        if(e){
+            return res.status(500).json({erro: e.message});
+        }
+        if(parseInt(id) > resultados[0].max){
+            return res.status(400).json({erro: "Não existe nenhum dado no banco de dados com o ID informado!"})
+        }
+        return next();
+    });
+}
 
 
 let curso = [];
@@ -48,7 +62,7 @@ server.get('/curso', (req, res) => {
 });
 
 // GET(ID):
-server.get('/curso/:id', (req, res) => {
+server.get('/curso/:id', CursoExiste, (req, res) => {
     const id = req.params.id;
     const sql = "SELECT * FROM Cursos WHERE id_curso = ?";
 
@@ -78,7 +92,7 @@ server.post(`/curso`, CursoValido, (req, res) => {
 });
 
 // Put:
-server.put(`/curso/:id`, CursoValido, (req, res) => {
+server.put(`/curso/:id`, CursoValido, CursoExiste, (req, res) => {
     const id = req.params.id;
     const objeto = req.body;
     const sql = "UPDATE Cursos SET nome = ? WHERE id_curso = ?";
@@ -96,7 +110,7 @@ server.put(`/curso/:id`, CursoValido, (req, res) => {
 });
 
 // DELETE:
-server.delete(`/curso/:id`, (req, res) => {
+server.delete(`/curso/:id`, CursoExiste, (req, res) => {
     const id = req.params.id;
     const sql = "DELETE FROM Cursos WHERE id_curso = ?"
 
