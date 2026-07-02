@@ -37,11 +37,15 @@ let curso = [];
 // GET:
 // '/curso'-> endpoint    |    req-> recebe    |    res-> responde
 server.get('/curso', (req, res) => {
-    // Retornando o objeto:
-    return res.json(curso);
+    const sql = "SELECT * FROM Cursos";
 
-    /* Forma encurtada: return res.json({propriedade: 'valor'}); */
-}); 
+    connection.query(sql, (e, resultados) => {
+        if(e){
+            return res.status(500).json({ erro: e.message });
+        }
+        return res.json(resultados);
+    });
+});
 
 // Post:
 server.post(`/curso`, CursoValido, (req, res) => {
