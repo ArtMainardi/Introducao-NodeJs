@@ -47,7 +47,7 @@ server.post(`/curso`, CursoExiste, (req, res) => {
     const objeto = req.body;
     const sql = "INSERT INTO Cursos(nome) VALUES (?)";
     
-    connection.query(sql, [objeto], (erro, resultados) => {
+    connection.query(sql, [objeto.nome], (erro, resultados) => {
         if(erro){
             return res.status(500).json({erro: erro.message})
         }
@@ -63,9 +63,18 @@ server.post(`/curso`, CursoExiste, (req, res) => {
 server.put(`/curso/:id`, CursoExiste, (req, res) => {
     const id = req.params.id;
     const objeto = req.body;
+    const sql = "UPDATE Cursos SET nome = ? WHERE id_curso = ?";
 
-    curso[id] = objeto.nome;
-    return res.json(curso);
+    connection.query(sql, [objeto.nome, id], (erro, respostas) => {
+        if(erro){
+            return res.status(500).json({erro: erro.message});
+        }
+        return res.json({
+            mensagem: "Curso modificado com sucesso!",
+            id: id,
+            nome: objeto.nome
+        });
+    });
 });
 
 // Delete
