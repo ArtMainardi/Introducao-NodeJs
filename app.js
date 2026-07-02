@@ -21,7 +21,7 @@ server.use((req, res, next) => { // Isso significa que toda e qualquer requisiç
 });
 
 // Middleware Local:
-function CursoExiste(req, res, next){
+function CursoValido(req, res, next){
     if(!req.body.nome){
         return res.status(400).json({
             erro: "O nome do curso é obrigatório!"
@@ -44,7 +44,7 @@ server.get('/curso', (req, res) => {
 }); 
 
 // Post:
-server.post(`/curso`, CursoExiste, (req, res) => {
+server.post(`/curso`, CursoValido, (req, res) => {
     const objeto = req.body;
     const sql = "INSERT INTO Cursos(nome) VALUES (?)";
     
@@ -61,7 +61,7 @@ server.post(`/curso`, CursoExiste, (req, res) => {
 });
 
 // Put:
-server.put(`/curso/:id`, CursoExiste, (req, res) => {
+server.put(`/curso/:id`, CursoValido, (req, res) => {
     const id = req.params.id;
     const objeto = req.body;
     const sql = "UPDATE Cursos SET nome = ? WHERE id_curso = ?";
