@@ -95,11 +95,19 @@ server.put(`/curso/:id`, CursoValido, (req, res) => {
     });
 });
 
-// Delete
+// DELETE:
 server.delete(`/curso/:id`, (req, res) => {
     const id = req.params.id;
-    curso.splice(id, 1);
-    return res.json(curso);
+    const sql = "DELETE FROM Cursos WHERE id_curso = ?"
+
+    connection.query(sql, [id], (e, resultados) => {
+        if(e){
+            return res.status(500).json({erro: e.message});
+        }
+        return res.json({
+            mensagem: "Curso deletado com sucesso!"
+        });
+    });
 });
 
 
