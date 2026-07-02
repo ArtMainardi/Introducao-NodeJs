@@ -1,5 +1,6 @@
 // Importa o framework express (Analogia: como se importasse o SpringBoot):
 const express = require('express');
+const connection = require('./db');
 // Cria a aplicação do servidor:
 const server = express(); // Variável que irá receber as requisições
 server.use(express.json()); // Permite que o Express entenda JSON
@@ -44,8 +45,18 @@ server.get('/curso', (req, res) => {
 // Post:
 server.post(`/curso`, CursoExiste, (req, res) => {
     const objeto = req.body;
-    curso.push(objeto.nome);
-    return res.json(curso);
+    const sql = "INSERT INTO Cursos(nome) VALUES (?)";
+    
+    connection.query(sql, [objeto], (erro, resultados) => {
+        if(erro){
+            return res.status(500).json({erro: erro.message})
+        }
+        return res.json({
+            mensagem: "Curso cadastrado com sucesso!",
+            id: resultados.insertId,
+            nome: objeto.nome
+        });
+    });
 });
 
 // Put:
