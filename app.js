@@ -12,9 +12,10 @@ server.use(express.urlencoded({ extended: true })); // Permite que entenda dados
 solicitação (req), resposta (res) e à próxima função de middleware no ciclo 
 de solicitação-resposta do aplicativo (geralmente chamada de next). */
 
+// Middleware Global:
 server.use((req, res, next) => { // Isso significa que toda e qualquer requisição que chegar ao servidor passará por essa função antes de chegar à rota final
     // next: Uma função que, quando chamada, passa o controle para o próximo middleware ou rota na fila.
-    console.log("Requisição chamada");
+    console.log(`${req.method} [${req.url}]`);
     return next();
     // Isso é crucial. Ele diz ao Node: "Já fiz o que precisava aqui, pode seguir para a próxima função/rota"
 });
