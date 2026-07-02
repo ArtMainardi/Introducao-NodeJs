@@ -2,7 +2,8 @@
 const express = require('express');
 // Cria a aplicação do servidor:
 const server = express(); // Variável que irá receber as requisições
-let curso = [];
+server.use(express.json()); // Permite que o Express entenda JSON
+server.use(express.urlencoded({ extended: true })); // Permite que entenda dados de formulários (URL-encoded)
 
 
 // ========= MIDDLEWARE =========
@@ -29,6 +30,7 @@ function CursoExiste(req, res, next){
 }
 
 
+let curso = [];
 // ========= MÉTODOS ========= //
 // GET:
 // '/curso'-> endpoint    |    req-> recebe    |    res-> responde
@@ -40,9 +42,6 @@ server.get('/curso', (req, res) => {
 }); 
 
 // Post:
-server.use(express.json()); // Permite que o Express entenda JSON
-server.use(express.urlencoded({ extended: true })); // Permite que entenda dados de formulários (URL-encoded)
-
 server.post(`/curso`, CursoExiste, (req, res) => {
     const objeto = req.body;
     curso.push(objeto.nome);
