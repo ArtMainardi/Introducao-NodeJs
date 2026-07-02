@@ -47,6 +47,19 @@ server.get('/curso', (req, res) => {
     });
 });
 
+// GET(ID):
+server.get('/curso/:id', (req, res) => {
+    const id = req.params.id;
+    const sql = "SELECT * FROM Cursos WHERE id_curso = ?";
+
+    connection.query(sql, [id], (e, resultados) => {
+        if(e){
+            return res.status(500).json({ erro: e.message });
+        }
+        return res.json(resultados);
+    });
+});
+
 // Post:
 server.post(`/curso`, CursoValido, (req, res) => {
     const objeto = req.body;
