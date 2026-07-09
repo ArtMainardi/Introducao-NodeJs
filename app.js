@@ -1,8 +1,10 @@
 // Importa o framework express (Analogia: como se importasse o SpringBoot):
 const express = require('express');
+const connection = require('./db');
 // Cria a aplicação do servidor:
 const server = express(); // Variável que irá receber as requisições
-let curso = [];
+server.use(express.json()); // Permite que o Express entenda JSON
+server.use(express.urlencoded({ extended: true })); // Permite que entenda dados de formulários (URL-encoded)
 
 
 // ========= MIDDLEWARE =========
@@ -10,15 +12,16 @@ let curso = [];
 solicitação (req), resposta (res) e à próxima função de middleware no ciclo 
 de solicitação-resposta do aplicativo (geralmente chamada de next). */
 
+// Middleware Global:
 server.use((req, res, next) => { // Isso significa que toda e qualquer requisição que chegar ao servidor passará por essa função antes de chegar à rota final
     // next: Uma função que, quando chamada, passa o controle para o próximo middleware ou rota na fila.
-    console.log("Requisição chamada");
+    console.log(`${req.method} [${req.url}]`);
     return next();
     // Isso é crucial. Ele diz ao Node: "Já fiz o que precisava aqui, pode seguir para a próxima função/rota"
 });
 
 // Middleware Local:
-function CursoExiste(req, res, next){
+function CursoValido(req, res, next){
     if(!req.body.nome){
         return res.status(400).json({
             erro: "O nome do curso é obrigatório!"
@@ -27,42 +30,98 @@ function CursoExiste(req, res, next){
         return next();
     }
 }
+function CursoExiste(req, res, next){
+    const id = req.params.id;
+    const sql = "SELECT * FROM Cursos WHERE id_curso = ?";
+
+    connection.query(sql, [id], (e, resultados) => {
+        if(e){
+            return res.status(500).json({erro: e.message});
+        }
+        if(resultados.length == 0){
+            return res.status(400).json({erro: "Não existe nenhum dado no banco de dados com o ID informado!"})
+        }
+        return next();
+    });
+}
 
 
+let curso = [];
 // ========= MÉTODOS ========= //
 // GET:
 // '/curso'-> endpoint    |    req-> recebe    |    res-> responde
 server.get('/curso', (req, res) => {
-    // Retornando o objeto:
-    return res.json(curso);
+    const sql = "SELECT * FROM Cursos";
 
-    /* Forma encurtada: return res.json({propriedade: 'valor'}); */
-}); 
+    connection.query(sql, (e, resultados) => {
+        if(e){
+            return res.status(500).json({ erro: e.message });
+        }
+        return res.json(resultados);
+    });
+});
+
+// GET(ID):
+server.get('/curso/:id', CursoExiste, (req, res) => {
+    const id = req.params.id;
+    const sql = "SELECT * FROM Cursos WHERE id_curso = ?";
+
+    connection.query(sql, [id], (e, resultados) => {
+        if(e){
+            return res.status(500).json({ erro: e.message });
+        }
+        return res.json(resultados);
+    });
+});
 
 // Post:
-server.use(express.json()); // Permite que o Express entenda JSON
-server.use(express.urlencoded({ extended: true })); // Permite que entenda dados de formulários (URL-encoded)
-
-server.post(`/curso`, CursoExiste, (req, res) => {
+server.post(`/curso`, CursoValido, (req, res) => {
     const objeto = req.body;
-    curso.push(objeto.nome);
-    return res.json(curso);
+    const sql = "INSERT INTO Cursos(nome) VALUES (?)";
+    
+    connection.query(sql, [objeto.nome], (erro, resultados) => {
+        if(erro){
+            return res.status(500).json({erro: erro.message})
+        }
+        return res.json({
+            mensagem: "Curso cadastrado com sucesso!",
+            id: resultados.insertId,
+            nome: objeto.nome
+        });
+    });
 });
 
 // Put:
-server.put(`/curso/:id`, CursoExiste, (req, res) => {
+server.put(`/curso/:id`, CursoValido, CursoExiste, (req, res) => {
     const id = req.params.id;
     const objeto = req.body;
+    const sql = "UPDATE Cursos SET nome = ? WHERE id_curso = ?";
 
-    curso[id] = objeto.nome;
-    return res.json(curso);
+    connection.query(sql, [objeto.nome, id], (erro, respostas) => {
+        if(erro){
+            return res.status(500).json({erro: erro.message});
+        }
+        return res.json({
+            mensagem: "Curso modificado com sucesso!",
+            id: id,
+            nome: objeto.nome
+        });
+    });
 });
 
-// Delete
-server.delete(`/curso/:id`, (req, res) => {
+// DELETE:
+server.delete(`/curso/:id`, CursoExiste, (req, res) => {
     const id = req.params.id;
-    curso.splice(id, 1);
-    return res.json(curso);
+    const sql = "DELETE FROM Cursos WHERE id_curso = ?"
+
+    connection.query(sql, [id], (e, resultados) => {
+        if(e){
+            return res.status(500).json({erro: e.message});
+        }
+        return res.json({
+            mensagem: "Curso deletado com sucesso!"
+        });
+    });
 });
 
 
